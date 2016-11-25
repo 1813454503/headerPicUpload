@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="css/jquery.Jcrop.css">
+    <style>
+        *{
+            margin:0;
+            padding:0;
+        }
+        body{
+            background:#ccc;
+        }
+        h2{
+            line-height:50px;
+            text-align:center;
+        }
+        .clearFix:after{
+            content:'';
+            display:block;
+            clear:both;
+        }
+        .clearFix{
+            zoom:1;
+        }
+        .container{
+            width:700px;
+            height:600px;
+            border:1px solid #000;
+            position:absolute;left:50%;top:50%;
+            margin:-300px 0 0 -350px;
+            background:#999;
+        }
+        .content_t{
+            height:30px;
+            margin-top:10px;
+        }
+
+        .content_t div{
+            overflow:hidden;
+            line-height:30px;
+            float:left;
+        }
+        .content_t div a{
+            padding:20px;
+            background:orange;
+            text-underline:none;
+        }
+        .content_t div input{
+            margin-left:-230px;
+        }
+
+        .content_t span{
+            line-height:30px;
+            float:left;
+            margin-left:30px;
+            color:#ccc;
+        }
+        .content_c{
+            position:relative;
+            margin-top:10px;
+        }
+        .big{
+            border: 1px solid #000;
+            width: 350px;
+            height: 350px;
+            float:left;
+            background:#000;
+        }
+        .big img{
+            width:350px;
+        }
+        .small{
+            float:left;
+            width:200px;
+            height:200px;
+            border:1px solid #000;
+            margin:30px 0 0 30px;
+            overflow:hidden;
+            position:absolute;right:50px;top:50px;
+            background:#000;
+        }
+
+        .small img {
+            width: 350px;
+            position:absolute;left:0;top:0;
+        }
+        .save{
+            width:100px;
+            height:30px;
+            line-height:30px;
+            background:orange;
+            text-align:center;
+            margin:30px auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h2>上传头像</h2>
+    <hr>
+    <div class="content_t clearFix">
+        <div>
+            <input type="file" id="file1" name="file"/>
+            <a id="fileBtn" href="javascript:;">上传照片</a>
+        </div>
+        <span>支持JPG、GIF、PNG格式,图片小于2M</span>
+    </div>
+    <div class="content_c clearFix">
+        <p class="big">
+            <img id="img1" alt="上传成功啦" src="1111.png"/>
+        </p>
+        <p class="small"><img src="1111.png" alt=""></p>
+    </div>
+    <div class="save">
+        <a href="javascript:;">保存图片</a>
+    </div>
+
+</div>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/ajaxfileupload.js"></script>
+    <script src="js/jquery.Jcrop.min.js"></script>
+
+    <script>
+        /**
+         * 图片上传函数
+         * */
+        function ajaxFileUpload() {
+            $.ajaxFileUpload(
+                {
+                    url: '/upload.aspx', //用于文件上传的服务器端请求地址
+                    secureuri: false, //是否需要安全协议，一般设置为false
+                    fileElementId: 'file1', //文件上传域的ID
+                    dataType: 'json', //返回值类型,ie低版本不支持json
+                    success: function (data, status)  //服务器成功响应处理函数
+                    {
+                        $("#img1").attr("src", data.imgurl);
+                        if (typeof (data.error) != 'undefined') {
+                            if (data.error != '') {
+                                alert(data.error);
+                            } else {
+                                alert(data.msg);
+                            }
+                        }
+                    },
+                    error: function (data, status, e)//服务器响应失败处理函数
+                    {
+                        alert(e);
+                    }
+                }
+            );
+            return false;
+        }
+
+        /**
+         * 图片第一次上传
+         * */
+       $('#fileBtn').on('click',function(){
+           $('#file1').trigger('click');
+       });
+
+        /**
+         * 初始化图片剪切函数
+         * */
+        var jcropApi;
+        $('.big').Jcrop({
+            setSelect:[30,30,231,231],
+            allowSelect:false,
+            allowResize:true,
+            minSize:[230,230],
+            aspectRatio:1
+        },function(){
+            jcropApi=this;
+            /**
+             * 预览功能
+             * */
+            $('.big').Jcrop({
+                onChange:function(){
+                    console.log(jcropApi.tellSelect().x);
+
+                    //计算比例后的宽高
+                    var newWidth=(200*350)/ (jcropApi.tellSelect().w-15);
+
+                    $('.small img')
+                        .css('left', -jcropApi.tellSelect().x+ 'px')
+                        .css('top', -jcropApi.tellSelect().y+ 'px')
+                        .css('width',newWidth+'px');
+                }
+            });
+        });
+
+        /**
+         * 剪切完成后头像上传
+         * */
+        $('.save a').on('click',function(){
+            ajaxFileUpload();
+        });
+    </script>
+</body>
+</html>
